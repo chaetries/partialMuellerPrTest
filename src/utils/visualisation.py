@@ -19,7 +19,7 @@ def visualize_save_mueller(
     num_cols=500,
     filter_zeros=True,
     show_fig=True,
-    crop_square=True       # <-- Option to decide whether you want to crop
+    crop_square=False       # <-- Option to decide whether you want to crop
 ):
     """
     Visualize and save a Mueller matrix as a 4x4 grid of subplots using imshow.
@@ -154,66 +154,89 @@ def visualize_save_mueller(
         plt.close(fig)
 
 
-def visualize_lu_chipman(data, file_path, file_name='Visualization.png', figsize=(15, 10), cmap='jet', title='',
-                         xlabel='', ylabel='', vmin=None, vmax=None, step=None, use_pi_notation=False,
-                         show_legend=True):
+
+def visualize_and_save_lu_chipman(
+    data,
+    file_path,
+    file_name: str = 'Visualization.png',
+    figsize=(15, 10),
+    cmap='jet',
+    title='',
+    xlabel='',
+    ylabel='',
+    vmin=None,
+    vmax=None,
+    step=None,
+    use_pi_notation=False,
+    show_legend=True,
+    zero_color=None      # ← color to use for exact-0 **and** exact-1 pixels
+):
     """
-    Plots and saves a 2D matrix as an image.
-    Parameters:
-    - data (np.ndarray): The 2D matrix to plot.
-    - file_path (str or Path): The directory path where the plot should be saved.
-    - file_name (str): The name of the file to save the plot as.
-    - figsize (tuple): The size of the figure (width, height in inches).
-    - cmap (str): The colormap used for plotting.
-    - title (str): The title of the plot.
-    - xlabel (str): The label for the x-axis.
-    - ylabel (str): The label for the y-axis.
-    - vmin (float): The minimum value for the color scale.
-    - vmax (float): The maximum value for the color scale.
-    - step (float): The step size for colorbar ticks.
-    - use_pi_notation (bool): Whether to use π notation for the colorbar labels.
-    - show_legend (bool): Whether to show the color bar.
+    Plots and saves a 2D matrix as an image, with an optional forced color
+    for the two “edge‐case” values 0 and 1.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The 2D matrix to plot.
+    file_path : str or Path
+        Directory where the plot should be saved.
+    file_name : str
+        Name of file to save.
+    figsize : tuple
+    cmap : str
+    title : str
+    xlabel, ylabel : str
+    vmin, vmax : float
+    step : float
+    use_pi_notation : bool
+    show_legend : bool
+    zero_color : str or None
+        If not None, color all exact zeros **and** all exact ones
+        in this color (e.g. 'black' or 'white'); all other values
+        are shown in `cmap`.
     """
     figure_path = Path(file_path)
     figure_path.mkdir(parents=True, exist_ok=True)
-
     plt.figure(figsize=figsize)
-    im = plt.imshow(data, aspect='auto', cmap=cmap, vmin=vmin, vmax=vmax)
+
+    if zero_color is not None:
+        # mask both 0 and 1 so they become “bad” in the colormap
+        mask = (data == 0) | (data == 1)
+        plot_data = np.ma.masked_array(data, mask=mask)
+
+        im = plt.imshow(plot_data, aspect='auto',
+                        cmap=cmap, vmin=vmin, vmax=vmax,
+                        interpolation='nearest')
+        # force the masked (0 & 1) pixels into your chosen color
+        im.cmap.set_bad(zero_color)
+    else:
+        im = plt.imshow(data, aspect='auto',
+                        cmap=cmap, vmin=vmin, vmax=vmax,
+                        interpolation='nearest')
 
     if show_legend:
         cbar = plt.colorbar(im)
-
-        if step is not None:
-            ticks = np.arange(vmax, vmin - step / 2, -step)  # Reverse order of ticks
+        if step is not None and (vmin is not None and vmax is not None):
+            ticks = np.arange(vmax, vmin - step/2, -step)
             cbar.set_ticks(ticks)
-
             if use_pi_notation:
                 def format_pi(x):
-                    if abs(x) < 1e-10:  # Check if the value is very close to zero
+                    if abs(x) < 1e-10:
                         return "0"
-                    elif x == np.pi:
+                    frac = Fraction(x/np.pi).limit_denominator(20)
+                    if frac == Fraction(0,1):
+                        return "0"
+                    if frac.numerator == 1 and frac.denominator == 1:
                         return "π"
-                    elif x == -np.pi:
+                    if frac.numerator == -1 and frac.denominator == 1:
                         return "-π"
-                    else:
-                        frac = Fraction(x / np.pi).limit_denominator(20)
-                        if frac.numerator == 1 and frac.denominator == 1:
-                            return "π"
-                        elif frac.numerator == -1 and frac.denominator == 1:
-                            return "-π"
-                        elif frac.numerator == 1:
-                            return f"π/{frac.denominator}"
-                        elif frac.numerator == -1:
-                            return f"-π/{frac.denominator}"
-                        elif frac.denominator == 1:
-                            return f"{frac.numerator}π"
-                        else:
-                            return f"{frac.numerator}π/{frac.denominator}"
-
-                cbar.set_ticklabels([format_pi(tick) for tick in ticks])
+                    if frac.denominator == 1:
+                        return f"{frac.numerator}π"
+                    return f"{frac.numerator}π/{frac.denominator}"
+                cbar.set_ticklabels([format_pi(t) for t in ticks])
             else:
-                cbar.set_ticklabels([f'{tick:.2f}' for tick in ticks])
-
+                cbar.set_ticklabels([f"{t:.2f}" for t in ticks])
         cbar.ax.tick_params(labelsize=30)
 
     plt.title(title, fontsize=30)
@@ -221,12 +244,13 @@ def visualize_lu_chipman(data, file_path, file_name='Visualization.png', figsize
     plt.xlabel(xlabel, fontsize=30)
     plt.ylabel(ylabel, fontsize=30)
 
-    plt.savefig(figure_path / file_name, bbox_inches='tight', pad_inches=0)
+    out_file = figure_path / file_name
+    plt.savefig(out_file, bbox_inches='tight', pad_inches=0)
     plt.show()
     plt.close()
 
-    print(f"Plot saved successfully at: {figure_path / file_name}")
-
+    print(f"Plot saved successfully at: {out_file}")
+    
 def plot_differential_histogram(diff_data, file_path, file_name='Histogram.png', bins=50,
                                 title='Histogram of Differences', xlabel='Difference', ylabel='Frequency'):
     figure_path = Path(file_path)
