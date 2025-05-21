@@ -6,6 +6,7 @@ from matplotlib.ticker import FormatStrFormatter
 from matplotlib.backends.backend_pdf import PdfPages
 from fractions import Fraction
 import seaborn as sns
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 
 def visualize_save_mueller(
@@ -189,7 +190,7 @@ def visualize_and_save_lu_chipman(
     xlabel, ylabel : str
     vmin, vmax : float
     step : float
-    use_pi_notation : bool
+    use_pi_notation : boolx
     show_legend : bool
     zero_color : str or None
         If not None, color all exact zeros **and** all exact ones
@@ -648,3 +649,72 @@ def visualize_last_row(flat_data, visualisation_path, sample_number, figsize=(15
     plt.savefig(save_path, bbox_inches='tight')
 
     plt.show()
+
+
+
+
+def plot_and_save_confusion_matrix(
+    y_true,
+    y_pred,
+    labels,
+    title,
+    save_path,
+    figsize=(5, 5),
+    cmap="Blues",
+    dpi=300,
+    fontsize=14,
+):
+    """
+    Compute, plot and save a confusion matrix with larger fonts.
+
+    Parameters
+    ----------
+    y_true : array-like
+        True labels.
+    y_pred : array-like
+        Predicted labels.
+    labels : list of str
+        Class names, e.g. ['Not PR','PR'].
+    title : str
+        Plot title.
+    save_path : Path or str
+        Where to save the png.
+    figsize : tuple
+        Figure size in inches.
+    cmap : str
+        Matplotlib colormap.
+    dpi : int
+        Resolution.
+    fontsize : int
+        Base font size for ticks, labels, title, and cell text.
+    """
+    # Compute CM
+    cm = confusion_matrix(y_true, y_pred)
+    disp = ConfusionMatrixDisplay(cm, display_labels=labels)
+
+    # Plot
+    fig, ax = plt.subplots(figsize=figsize)
+    disp.plot(ax=ax, cmap=cmap, values_format='d', colorbar=False)
+
+    # Increase the font size of the numbers in the cells
+    for txt in ax.texts:
+        txt.set_fontsize(fontsize)
+
+    # No grid
+    ax.grid(False)
+
+    # Colorbar matching height
+    im = ax.images[0]
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.ax.yaxis.set_tick_params(labelsize=fontsize)
+    cbar.ax.set_ylabel('Count', rotation=-90, va='bottom', fontsize=fontsize)
+
+    # Labels, title, ticks
+    ax.set_title(title, pad=12, fontsize=fontsize + 2, fontweight='bold')
+    ax.set_xlabel("Predicted label", fontsize=fontsize)
+    ax.set_ylabel("True label", fontsize=fontsize)
+    ax.tick_params(axis='both', which='major', labelsize=fontsize)
+
+    # Save & close
+    fig.savefig(save_path, bbox_inches='tight', dpi=dpi)
+    plt.close(fig)
