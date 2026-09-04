@@ -8,10 +8,10 @@ import numpy as np
 
 __all__ = [
     "build_eigen_matrix",
-    "cholesky_realizable",
-    "choletsky",
     "charpoly",
     "charpoly_vectorized",
+    "cholesky_realizable",
+    "choletsky",
 ]
 
 

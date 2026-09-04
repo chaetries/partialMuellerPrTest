@@ -4,24 +4,26 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from skimage.metrics import structural_similarity as ssim
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from src.utils.physical_realizability import build_eigen_matrix
+
+logger = logging.getLogger(__name__)
 
 
 def load_dataset(file_path: Path | str) -> np.ndarray:
     """Load a flattened Mueller CSV into an ``(N, 4, 4)`` array."""
     csv_path = Path(file_path)
-    logging.info("Loading dataset from %s", csv_path)
+    logger.info("Loading dataset from %s", csv_path)
     df = pd.read_csv(csv_path, header=None)
     data_np = df.to_numpy().reshape((-1, 4, 4))
-    logging.info("Loaded dataset shape: %s", data_np.shape)
+    logger.info("Loaded dataset shape: %s", data_np.shape)
     return data_np
 
 
@@ -33,7 +35,7 @@ def save_data(
 ) -> None:
     """Persist matrix rows and original indices as CSV files."""
     if len(matrices) == 0:
-        logging.warning("No matrices to save for %s", file_name_prefix)
+        logger.warning("No matrices to save for %s", file_name_prefix)
         return
 
     output_dir = Path(save_dir)
@@ -48,8 +50,8 @@ def save_data(
     matrices_df.to_csv(matrices_file_path, index=False, header=False)
     indices_df.to_csv(indices_file_path, index=False, header=False)
 
-    logging.info("Saved matrices to %s", matrices_file_path)
-    logging.info("Saved indices to %s", indices_file_path)
+    logger.info("Saved matrices to %s", matrices_file_path)
+    logger.info("Saved indices to %s", indices_file_path)
 
 
 def classify_and_save_matrices(

@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.utils.experiments import MODEL_FILE_BASENAMES, get_experiment, resolve_model_path
+from src.utils.experiments import (
+    MODEL_FILE_BASENAMES,
+    get_experiment,
+    resolve_model_path,
+)
 from src.utils.file_paths import file_paths
 from src.utils.testing_utils.trained_models import load_pixel_mlp_checkpoint
 

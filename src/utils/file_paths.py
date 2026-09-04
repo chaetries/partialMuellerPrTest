@@ -15,7 +15,6 @@ from src.utils.experiments import (
     resolve_model_path,
 )
 
-
 TISSUE_DIMENSIONS = {
     "cervix": {"num_rows": 600, "num_cols": 800},
     "brain": {"num_rows": 388, "num_cols": 516},

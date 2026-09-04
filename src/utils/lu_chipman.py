@@ -1,5 +1,6 @@
-import numpy as np
 import time
+
+import numpy as np
 
 
 def lu_chipman_matlab(mueller_data):
@@ -117,12 +118,6 @@ def lu_chipman_matlab(mueller_data):
                 delta = 1 - (abs(m_delta[0, 0]) + abs(m_delta[1, 1]) + abs(m_delta[2, 2])) / 3
 
                 # Calculate retardance parameters (MATLAB style)
-                # Total retardance
-                arg = (np.trace(m_R) / 2) - 0.5
-                if abs(arg) > 1:  # Handle numerical errors like MATLAB
-                    arg = np.sign(arg)
-                R = np.arccos(np.clip(arg, -1.0, 1.0))
-
                 # Linear retardance (MATLAB style)
                 LR = np.arccos(np.clip(m_R[2, 2], -1.0, 1.0))
 
@@ -140,7 +135,6 @@ def lu_chipman_matlab(mueller_data):
                 # Special case for singular matrices (follow MATLAB precisely)
                 # Use a regularized pseudoinverse approach
                 delta = 0  # Default value
-                R = 0
                 LR = 0
                 CR = 0
                 psi = 0
@@ -162,19 +156,15 @@ def lu_chipman_matlab(mueller_data):
                     m_R_approx = np.dot(U, np.dot(np.diag(S_inv), Vt))
 
                     # Recalculate parameters
-                    arg = (np.trace(m_R_approx) / 2) - 0.5
-                    if abs(arg) <= 1:
-                        R = np.arccos(arg)
-
                     LR = np.arccos(np.clip(m_R_approx[2, 2], -1.0, 1.0))
                     CR = 0.5 * np.arctan2((m_R_approx[1, 0] - m_R_approx[0, 1]),
                                           (m_R_approx[0, 0] + m_R_approx[1, 1]))
 
                     # Approximate depolarization
                     delta = 1 - np.mean(np.abs(np.diag(m_prime)))
-                except:
-                    # If everything fails, use default values
-                    pass
+                except (np.linalg.LinAlgError, ValueError):
+                    # Keep the initialized defaults when decomposition fails.
+                    delta = 0
 
             # Store results
             MMD_D[x, y] = D

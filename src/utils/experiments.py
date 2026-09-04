@@ -6,12 +6,11 @@ explicit in code instead of scattering suffix logic across notebooks/scripts.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable
 
-
-MODEL_FILE_BASENAMES: Dict[str, str] = {
+MODEL_FILE_BASENAMES: dict[str, str] = {
     "xgb": "pixel_xgb.json",
     "catboost": "pixel_catboost.cbm",
     "pixel_mlp": "best_pixel_mlp.pth",
@@ -35,7 +34,7 @@ class ExperimentSpec:
         return MODEL_FILE_BASENAMES[model_family]
 
 
-EXPERIMENTS: Dict[str, ExperimentSpec] = {
+EXPERIMENTS: dict[str, ExperimentSpec] = {
     "full": ExperimentSpec(
         name="full",
         suffix="",
@@ -53,12 +52,6 @@ EXPERIMENTS: Dict[str, ExperimentSpec] = {
         suffix="_4x3",
         notebook_file="pr_partial_4x3.ipynb",
         results_subdir="4x3",
-    ),
-    "4x1_lastcol": ExperimentSpec(
-        name="4x1_lastcol",
-        suffix="_4x1_lastcol",
-        notebook_file="pr_partial_4x1_lastcol.ipynb",
-        results_subdir="4x1_lastcol",
     ),
 }
 

@@ -2,7 +2,13 @@
 
 This repository contains utilities, notebooks, and experiment definitions for predicting whether measured Mueller matrices are physically realizable. It supports analytical physical-realizability tests and machine-learning models that operate on full or partial Mueller-matrix measurements.
 
-The project was developed for polarimetric imaging experiments on cervix, brain, and AFM Mueller-matrix microscopy data. Data, trained models, publication files, and generated results are intentionally kept outside Git because they are large or environment-specific.
+The project was developed for polarimetric imaging experiments on cervix, brain, and AFM Mueller-matrix microscopy data.
+
+## Example results
+
+![Physical-realizability results for brain, cervix, and skin samples](docs/figures/pr_test_sample_ABC.png)
+
+Physical-realizability comparison for brain, cervix, and skin samples. Row A shows the measured samples; rows B and C show the corresponding classification maps produced by the compared methods. Red boxes highlight the enlarged skin region.
 
 ## What is included
 
@@ -11,7 +17,7 @@ The project was developed for polarimetric imaging experiments on cervix, brain,
 - XGBoost, CatBoost, and PyTorch MLP model-loading helpers.
 - Full-matrix and partial-measurement experiment configurations.
 - Evaluation helpers for regression metrics, SSIM, and reconstructed images.
-- Mueller-matrix and Lu-Chipman decomposition visualizations.
+- Mueller-matrix visualizations.
 
 ## Experiment variants
 
@@ -20,7 +26,6 @@ The project was developed for polarimetric imaging experiments on cervix, brain,
 | `full` | Complete 4 x 4 matrix | Training workflow |
 | `3x3` | Partial 3 x 3 measurement | `pr_partial_3x3.ipynb` |
 | `4x3` | Partial 4 x 3 measurement | `pr_partial_4x3.ipynb` |
-| `4x1_lastcol` | Last-column partial measurement | `pr_partial_4x1_lastcol.ipynb` |
 
 Experiment metadata and path resolution are centralized in `src/utils/experiments.py`.
 
@@ -42,8 +47,6 @@ partialPr/
 │   └── lu_chipman.py
 └── archive/               # retained legacy workflows
 ```
-
-The directories `data/`, `model/`, `results/`, `publication/`, and `temporary/` are local working directories and are ignored by Git.
 
 ## Installation
 
@@ -132,6 +135,21 @@ Supported model-family names are `xgb`, `catboost`, and `pixel_mlp`.
 - `src/utils/pr_test.py` and `src/utils/visualisation.py` are compatibility wrappers for older notebooks.
 - Trained model files are resolved first from `model/experiments/<experiment>/`, with support for the earlier flat model layout.
 - Tissue image dimensions are defined in `src/utils/file_paths.py` and currently cover cervix, brain, AFMMM, and simulated samples.
+
+## Citation
+
+If this code contributes to your work, please cite the associated manuscript:
+
+> S. Chae, M. Wang, T. Lucas, T. Huang, G. Albano, O. Rodriguez-Nunez, A. Pierangelo, E. Gros, T. Maragkou, R. McKinley, P. Schucht, and T. Novikova, “Physical realizability classification of incomplete Mueller matrices: toward real-time polarimetric imaging,” submitted to *Biomedical Optics Express* (2026).
+
+```bibtex
+@unpublished{chae2026physical,
+  author  = {Chae, Sooyong and Wang, Meishu and Lucas, Theotim and Huang, Tongyu and Albano, Gianmarco and Rodriguez-Nunez, Omar and Pierangelo, Angelo and Gros, Elea and Maragkou, Theoni and McKinley, Richard and Schucht, Philippe and Novikova, Tatiana},
+  title   = {Physical Realizability Classification of Incomplete Mueller Matrices: Toward Real-Time Polarimetric Imaging},
+  note    = {Submitted to Biomedical Optics Express},
+  year    = {2026}
+}
+```
 
 ## Repository
 

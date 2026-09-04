@@ -1,12 +1,12 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 from pathlib import Path
-from matplotlib.ticker import FormatStrFormatter
-from matplotlib.backends.backend_pdf import PdfPages
-from fractions import Fraction
+
+import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from matplotlib import colors
+from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.ticker import FormatStrFormatter
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
 
 def visualize_save_mueller(
@@ -119,7 +119,7 @@ def visualize_save_mueller(
             component_vmin -= 1e-5
             component_vmax += 1e-5
 
-        im = axes[i].imshow(
+        axes[i].imshow(
             component_data,
             cmap=cmap,
             vmin=vmin,
@@ -153,108 +153,8 @@ def visualize_save_mueller(
         print(f"Saved PDF successfully to {save_path}")
         if show_fig:
             plt.show()
-    except Exception as e:
-        print(f"Failed to save PDF: {e}")
     finally:
         plt.close(fig)
-
-
-def visualize_and_save_lu_chipman(
-        data,
-        file_path,
-        file_name: str = 'Visualization.png',
-        figsize=(15, 10),
-        cmap='jet',
-        title='',
-        xlabel='',
-        ylabel='',
-        vmin=None,
-        vmax=None,
-        step=None,
-        use_pi_notation=False,
-        show_legend=True,
-        zero_color=None  # Color to use for exact-0 and exact-1 pixels.
-):
-    """
-    Plots and saves a 2D matrix as an image, with an optional forced color
-    for the two edge-case values 0 and 1.
-
-    Parameters
-    ----------
-    data : np.ndarray
-        The 2D matrix to plot.
-    file_path : str or Path
-        Directory where the plot should be saved.
-    file_name : str
-        Name of file to save.
-    figsize : tuple
-    cmap : str
-    title : str
-    xlabel, ylabel : str
-    vmin, vmax : float
-    step : float
-    use_pi_notation : bool
-    show_legend : bool
-    zero_color : str or None
-        If not None, color all exact zeros **and** all exact ones
-        in this color (e.g. 'black' or 'white'); all other values
-        are shown in `cmap`.
-    """
-    figure_path = Path(file_path)
-    figure_path.mkdir(parents=True, exist_ok=True)
-    plt.figure(figsize=figsize)
-
-    if zero_color is not None:
-        # Mask both 0 and 1 so they become "bad" in the colormap.
-        mask = (data == 0) | (data == 1)
-        plot_data = np.ma.masked_array(data, mask=mask)
-
-        im = plt.imshow(plot_data, aspect='auto',
-                        cmap=cmap, vmin=vmin, vmax=vmax,
-                        interpolation='nearest')
-        # force the masked (0 & 1) pixels into your chosen color
-        im.cmap.set_bad(zero_color)
-    else:
-        im = plt.imshow(data, aspect='auto',
-                        cmap=cmap, vmin=vmin, vmax=vmax,
-                        interpolation='nearest')
-
-    if show_legend:
-        cbar = plt.colorbar(im)
-        if step is not None and (vmin is not None and vmax is not None):
-            ticks = np.arange(vmax, vmin - step / 2, -step)
-            cbar.set_ticks(ticks)
-            if use_pi_notation:
-                def format_pi(x):
-                    if abs(x) < 1e-10:
-                        return "0"
-                    frac = Fraction(x / np.pi).limit_denominator(20)
-                    if frac == Fraction(0, 1):
-                        return "0"
-                    if frac.numerator == 1 and frac.denominator == 1:
-                        return "pi"
-                    if frac.numerator == -1 and frac.denominator == 1:
-                        return "-pi"
-                    if frac.denominator == 1:
-                        return f"{frac.numerator}pi"
-                    return f"{frac.numerator}pi/{frac.denominator}"
-
-                cbar.set_ticklabels([format_pi(t) for t in ticks])
-            else:
-                cbar.set_ticklabels([f"{t:.2f}" for t in ticks])
-        cbar.ax.tick_params(labelsize=30)
-
-    plt.title(title, fontsize=30)
-    plt.axis('off')
-    plt.xlabel(xlabel, fontsize=30)
-    plt.ylabel(ylabel, fontsize=30)
-
-    out_file = figure_path / file_name
-    plt.savefig(out_file, bbox_inches='tight', pad_inches=0)
-    plt.show()
-    plt.close()
-
-    print(f"Plot saved successfully at: {out_file}")
 
 
 def plot_differential_histogram(diff_data, file_path, file_name='Histogram.png', bins=50,
@@ -541,9 +441,6 @@ def visualize_save_mueller_with_mask(data, raw_path, visualisation_path, sample_
     diseased_mask_data = load_mask(raw_path / f'Meredith/Sample{sample_number}/diseased_ZoneMask.dat')
     healthy_mask_data = load_mask(raw_path / f'Meredith/Sample{sample_number}/healthy_ZoneMask.dat')
 
-    # Generate Mueller matrix component labels
-    labels = [f"M({i},{j})" for i in range(1, 5) for j in range(1, 5)]
-
     # Display in a 4x4 grid format
     fig, axes = plt.subplots(4, 4, figsize=figsize)
     axes = axes.flatten()  # Flatten the 2D grid to 1D for easy indexing
@@ -562,7 +459,7 @@ def visualize_save_mueller_with_mask(data, raw_path, visualisation_path, sample_
             vmin, vmax = -0.1, 0.1
 
         # Display the Mueller matrix component data
-        im = axes[i].imshow(component_data, cmap='jet', aspect='auto', vmin=vmin, vmax=vmax)
+        axes[i].imshow(component_data, cmap='jet', aspect='auto', vmin=vmin, vmax=vmax)
 
         # Overlay the masks
         overlay = np.zeros((*component_data.shape, 4), dtype=np.uint8)  # RGBA image
@@ -639,7 +536,7 @@ def visualize_last_row(flat_data, visualisation_path, sample_number, figsize=(15
         component_data = flat_data[:, i].reshape(num_rows, num_cols)
 
         # Visualization with jet color map
-        im = ax.imshow(component_data, cmap='jet', aspect='equal', vmin=global_min, vmax=global_max)
+        ax.imshow(component_data, cmap='jet', aspect='equal', vmin=global_min, vmax=global_max)
 
         ax.axis('off')
 
