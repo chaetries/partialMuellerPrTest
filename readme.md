@@ -143,11 +143,16 @@ If this code contributes to your work, please cite the associated manuscript:
 > S. Chae, M. Wang, T. Lucas, T. Huang, G. Albano, O. Rodriguez-Nunez, A. Pierangelo, E. Gros, T. Maragkou, R. McKinley, P. Schucht, and T. Novikova, “Physical realizability classification of incomplete Mueller matrices: toward real-time polarimetric imaging,” submitted to *Biomedical Optics Express* (2026).
 
 ```bibtex
-@unpublished{chae2026physical,
+@article{chae2026physical,
   author  = {Chae, Sooyong and Wang, Meishu and Lucas, Theotim and Huang, Tongyu and Albano, Gianmarco and Rodriguez-Nunez, Omar and Pierangelo, Angelo and Gros, Elea and Maragkou, Theoni and McKinley, Richard and Schucht, Philippe and Novikova, Tatiana},
   title   = {Physical Realizability Classification of Incomplete Mueller Matrices: Toward Real-Time Polarimetric Imaging},
-  note    = {Submitted to Biomedical Optics Express},
-  year    = {2026}
+  journal = {Biomedical Optics Express},
+  volume  = {17},
+  number  = {11},
+  pages   = {5752--5766},
+  year    = {2026},
+  doi     = {10.1364/BOE.608210},
+  url     = {https://doi.org/10.1364/BOE.608210}
 }
 ```
 
